@@ -78,7 +78,7 @@ def image_to_text(image_source, language='en'):
     except Exception as e:
         return f"Error: {str(e)}"
 
-def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no_artist):
+def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no_artist, retries=3):
     if inputText.startswith("Error"):
         return "There was an error processing the image. Please try again."
 
@@ -112,19 +112,18 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
         }
     }
 
-    response = requests.post(API_URL, headers=headers, json=payload)
-    response = response.json()
+    for _ in range(retries):
+        response = requests.post(API_URL, headers=headers, json=payload)
+        response = response.json()
 
-    try:
-        generated_text = response[0]["generated_text"]
-        if "As the AI language model" in generated_text or "I am unable to render visual data" in generated_text or "As an AI art model" in generated_text or "AI" in generated_text:
-            # Retry if the response contains undesired phrases
-            response = requests.post(API_URL, headers=headers, json=payload)
-            response = response.json()
+        try:
             generated_text = response[0]["generated_text"]
-        return generated_text
-    except Exception as e:
-        return f"Error: {str(e)}"
+            if "As the AI language model" not in generated_text and "I am unable to render visual data" not in generated_text:
+                return generated_text
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    return "Error: Failed to generate a valid prompt after multiple attempts."
 
 def generate_image(prompt):
     stable_diffusion_api = "https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4"
@@ -336,9 +335,12 @@ def main_ui():
 
     with st.expander("**App Working**"):
         st.write('''
-        - **Upload Your Image(s)**: Upload an image or multiple images you want to generate prompts for.
-        - **Generate Prompt**: Click the generate button to create AI art prompts based on the uploaded images.
-        - **Download File**: If you uploaded multiple images, download the generated prompts as a file (CSV, TXT, DOC) or ZIP file.
+        - **Upload Your Image(s)**: Upload a single image or multiple images to generate AI art prompts.
+        - **Custom Text**: Add optional custom text to include in your prompts.
+        - **Artist Selection**: Choose whether to let the AI define the artist, use your own artist selection, or no artist at all.
+        - **Modifiers**: Select optional modifiers to refine the style and details of your prompts.
+        - **Output**: Download the generated prompts as a CSV, TXT, or DOC file, or get them in a ZIP file if you choose to output prompts in separate documents.
+        - **Generate Image**: Check the box to generate AI art from the prompt using OpenAI DALL·E.
         ''')
 
 if __name__ == "__main__":
