@@ -11,8 +11,9 @@ from zipfile import ZipFile
 API_KEY = os.getenv('API_KEY')
 if not API_KEY:
     st.error("API_KEY environment variable not set. Please set it in the Streamlit Cloud settings.")
-else:
-    st.write("API_KEY loaded successfully.")
+
+# Set page configuration
+st.set_page_config(page_title="Photo to Prompt", page_icon="🎨", layout="wide")
 
 headers = {"Authorization": f"Bearer {API_KEY}"}
 
