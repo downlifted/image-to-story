@@ -8,7 +8,6 @@ from io import BytesIO
 from zipfile import ZipFile
 
 # Load environment variables from .env file if exists
-load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
 if API_KEY is None:
