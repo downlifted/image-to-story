@@ -7,11 +7,12 @@ from PIL import Image
 from io import BytesIO
 from zipfile import ZipFile
 
-# Load environment variables from .env file if exists
+# Directly setting the API key
 API_KEY = os.getenv('API_KEY')
-
-if API_KEY is None:
+if not API_KEY:
     st.error("API_KEY environment variable not set. Please set it in the Streamlit Cloud settings.")
+else:
+    st.write("API_KEY loaded successfully.")
 
 headers = {"Authorization": f"Bearer {API_KEY}"}
 
@@ -67,8 +68,8 @@ affiliate_images = {
     "Craiyon": "https://assets.eweek.com/uploads/2024/01/craiyon-icon.png"
 }
 
-def image_to_text(image_source, language='en'):
-    salesforce_blip = f"https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base?lang={language}"
+def image_to_text(image_source):
+    salesforce_blip = "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base"
     API_URL = salesforce_blip
 
     with open(image_source, "rb") as f:
@@ -140,6 +141,7 @@ def generate_image(prompt):
     if response.status_code == 200:
         return response.content
     else:
+        st.error("Error generating image. Status code: {}".format(response.status_code))
         return None
 
 def save_file(data, filename, file_format):
@@ -203,18 +205,22 @@ def single_image_ui():
                     if image_data:
                         image = Image.open(BytesIO(image_data))
                         st.image(image, caption="Generated AI Art", use_column_width=True)
-                        st.write("If you would like to generate better art based on your prompt, click here:")
-                        st.markdown("<div class='affiliate-logos'>"
-                                    f"<a href='{affiliate_links['MidJourney']}' target='_blank'><img src='{affiliate_images['MidJourney']}'></a>"
-                                    f"<a href='{affiliate_links['DreamStudio']}' target='_blank'><img src='{affiliate_images['DreamStudio']}'></a>"
-                                    f"<a href='{affiliate_links['DALL·E']}' target='_blank'><img src='{affiliate_images['DALL·E']}'></a>"
-                                    f"<a href='{affiliate_links['DeepAI']}' target='_blank'><img src='{affiliate_images['DeepAI']}'></a>"
-                                    f"<a href='{affiliate_links['Craiyon']}' target='_blank'><img src='{affiliate_images['Craiyon']}'></a>"
-                                    "</div>", unsafe_allow_html=True)
-                        with open(f"generated_image.png", "wb") as img_file:
-                            img_file.write(image_data)
                     else:
                         st.error("Error generating image. Please try again.")
+
+                # Provide link to generate image on Bing
+                bing_url = f"https://www.bing.com/images/create?q={prompt.replace(' ', '+')}"
+                st.markdown(f"[Generate this image on Bing]({bing_url})", unsafe_allow_html=True)
+                
+                # Provide affiliate links
+                st.write("If you would like to generate better art based on your prompt, click here:")
+                st.markdown("<div class='affiliate-logos'>"
+                            f"<a href='{affiliate_links['MidJourney']}' target='_blank'><img src='{affiliate_images['MidJourney']}'></a>"
+                            f"<a href='{affiliate_links['DreamStudio']}' target='_blank'><img src='{affiliate_images['DreamStudio']}'></a>"
+                            f"<a href='{affiliate_links['DALL·E']}' target='_blank'><img src='{affiliate_images['DALL·E']}'></a>"
+                            f"<a href='{affiliate_links['DeepAI']}' target='_blank'><img src='{affiliate_images['DeepAI']}'></a>"
+                            f"<a href='{affiliate_links['Craiyon']}' target='_blank'><img src='{affiliate_images['Craiyon']}'></a>"
+                            "</div>", unsafe_allow_html=True)
                 
                 # Deleting the images
                 os.remove(image_path)
