@@ -297,7 +297,7 @@ def main_ui():
         .affiliate-logos img {width: 60px; height: auto;}
         .creator-info {display: flex; justify-content: center; gap: 10px; align-items: center;}
         .creator-info img {width: 30px; height: auto;}
-        .top-bar {display: flex; justify-content: center; align-items: center; gap: 20px; padding: 10px; background-color: rgba(255, 255, 255, 0.8); border-radius: 8px; margin-bottom: 20px;}
+        .top-bar {display: flex; justify-content: center; align-items: center; gap: 20px; padding: 10px; background-color: rgba(64, 64, 64, 0.8); border-radius: 8px; margin-bottom: 20px;}
         .top-bar img {width: 100px; height: 150px;}
         </style>
         """,
@@ -306,11 +306,7 @@ def main_ui():
 
     st.markdown(
         "<div class='top-bar'>"
-        "<img src='https://github.com/downlifted/pictoprompt/blob/master/images/pexels-photo-139312.jpg?raw=true' alt='Logo'/>"
-        "<div>"
-        "<a href='https://x.com/AiAnarchist' target='_blank'><img src='https://static.vecteezy.com/system/resources/thumbnails/027/395/710/small/twitter-brand-new-logo-3-d-with-new-x-shaped-graphic-of-the-world-s-most-popular-social-media-free-png.png' alt='X'></a>"
-        "<a href='mailto:downlifted@gmail.com'><img src='https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_(2020).svg' alt='Email'></a>"
-        "</div>"
+        "<img src='https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/text.jpg' alt='Logo'/>"
         "</div>", 
         unsafe_allow_html=True
     )
