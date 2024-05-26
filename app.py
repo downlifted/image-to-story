@@ -301,7 +301,7 @@ def main_ui():
     st.markdown(hide_default_format, unsafe_allow_html=True)
     st.markdown(
         "<div style='text-align: center;'>"
-        "<img src='https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/logo.png' width='200' style='margin: 0 auto 20px;'/>"
+        "<img src='https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/logo.png' width='300' style='margin: 0 auto 20px;'/>"
         "</div>", unsafe_allow_html=True
     )
     st.title("Pic-To-Prompt: Photo to AI Art Prompt")
