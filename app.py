@@ -135,7 +135,7 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
     return "Error: Failed to generate a valid prompt after multiple attempts."
 
 def generate_image(prompt):
-    stable_diffusion_api = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
+    stable_diffusion_api = "https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4"
     payload = {"inputs": prompt}
     response = requests.post(stable_diffusion_api, headers=headers, json=payload)
     
@@ -208,10 +208,6 @@ def single_image_ui():
                         st.image(image, caption="Generated AI Art", use_column_width=True)
                     else:
                         st.error("Error generating image. Please try again.")
-
-                # Provide link to generate image on Bing
-                bing_url = f"https://www.bing.com/images/create?q={'+'.join(prompt.split())}"
-                st.markdown(f"[Generate this image on Bing]({bing_url})", unsafe_allow_html=True)
                 
                 # Provide affiliate links
                 st.write("If you would like to generate better art based on your prompt, click here:")
