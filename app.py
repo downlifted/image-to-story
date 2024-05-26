@@ -78,7 +78,7 @@ def image_to_text(image_source, language='en'):
     except Exception as e:
         return f"Error: {str(e)}"
 
-def generatePrompt(inputText, artists, modifiers, custom_text, define_artist):
+def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no_artist):
     if inputText.startswith("Error"):
         return "There was an error processing the image. Please try again."
 
@@ -88,11 +88,12 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist):
     prompt = f"Create a unique and high-quality prompt for AI art based on the context of the photo: {inputText}."
     if custom_text:
         prompt += f" Theme: {custom_text}."
-    if define_artist:
-        prompt += " Try to define the artist style."
-    else:
-        artist = ', '.join(random.sample(artists, len(artists)))
-        prompt += f" Style by {artist}."
+    if not no_artist:
+        if define_artist:
+            prompt += " Try to define the artist style."
+        else:
+            artist = ', '.join(random.sample(artists, len(artists)))
+            prompt += f" Style by {artist}."
     if modifiers:
         modifier = ', '.join(random.sample(modifiers, len(modifiers)))
         prompt += f" Modifier: {modifier}."
@@ -143,15 +144,15 @@ def save_file(data, filename, file_format):
             doc.add_paragraph(row['Prompt'])
         doc.save(filename)
 
-def create_zip_file(folder_path, artists, modifiers, custom_text, define_artist):
+def create_zip_file(folder_path, artists, modifiers, custom_text, define_artist, no_artist):
     zip_filename = "prompts.zip"
     with ZipFile(zip_filename, 'w') as zipf:
-        for idx, image_name in enumerate(os.listdir(folder_path)):
+        for image_name in os.listdir(folder_path):
             if image_name.endswith(('jpg', 'png')):
                 image_path = os.path.join(folder_path, image_name)
                 caption = image_to_text(image_path)
-                prompt = generatePrompt(caption, artists, modifiers, custom_text, define_artist)
-                doc_filename = f"prompt_{idx+1}.txt"
+                prompt = generatePrompt(caption, artists, modifiers, custom_text, define_artist, no_artist)
+                doc_filename = f"{os.path.splitext(image_name)[0]}.txt"
                 with open(doc_filename, "w") as file:
                     file.write(prompt)
                 zipf.write(doc_filename)
@@ -163,7 +164,7 @@ def single_image_ui():
     uploaded_file = st.file_uploader("Choose a photo...", type=["jpg", "png"], help="Upload a photo to generate AI art prompt")
 
     custom_text = st.text_input("Add Custom Text (Optional)")
-    define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist"])
+    define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist", "No artist"])
     selected_artists = st.multiselect("Select Artists (Optional)", artists) if define_artist == "Use my own artist" else []
     selected_modifiers = st.multiselect("Select Modifiers (Optional)", modifiers)
     generate_image_checkbox = st.checkbox("Generate Image from Prompt")
@@ -179,7 +180,7 @@ def single_image_ui():
         if st.button("Generate Prompt and Image", key="single_generate"):
             with st.spinner('Generating Prompt and Image...'):
                 caption = image_to_text(image_path)
-                prompt = generatePrompt(caption, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist")
+                prompt = generatePrompt(caption, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist", define_artist == "No artist")
                 
                 st.write("**Caption:**", caption)
                 st.write("**Prompt:**", prompt)
@@ -206,7 +207,7 @@ def single_image_ui():
                 # Deleting the images
                 os.remove(image_path)
 
-def generate_csv(folder_path, artists, modifiers, custom_text, include_image_name, output_format, define_artist):
+def generate_csv(folder_path, artists, modifiers, custom_text, include_image_name, output_format, define_artist, no_artist):
     data = []
     image_files = [f for f in os.listdir(folder_path) if f.endswith(('jpg', 'png'))]
     total_files = len(image_files)
@@ -216,7 +217,7 @@ def generate_csv(folder_path, artists, modifiers, custom_text, include_image_nam
     for idx, image_name in enumerate(image_files):
         image_path = os.path.join(folder_path, image_name)
         caption = image_to_text(image_path)
-        prompt = generatePrompt(caption, artists, modifiers, custom_text, define_artist)
+        prompt = generatePrompt(caption, artists, modifiers, custom_text, define_artist, no_artist)
         if include_image_name:
             data.append([image_name, prompt])
         else:
@@ -237,7 +238,7 @@ def batch_image_ui():
     uploaded_folder = st.file_uploader("Upload a folder of images...", type=None, accept_multiple_files=True, help="Upload multiple images to generate prompts in batch")
 
     custom_text = st.text_input("Add Custom Text (Optional)")
-    define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist"], key="batch_define_artist")
+    define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist", "No artist"], key="batch_define_artist")
     selected_artists = st.multiselect("Select Artists (Optional)", artists, key="batch_artist") if define_artist == "Use my own artist" else []
     selected_modifiers = st.multiselect("Select Modifiers (Optional)", modifiers, key="batch_modifier")
     include_image_name = st.checkbox("Include Image Name in Output")
@@ -256,11 +257,11 @@ def batch_image_ui():
         if st.button("Generate File", key="batch_generate"):
             with st.spinner('Generating File...'):
                 if zip_output_checkbox:
-                    zip_filename = create_zip_file(folder_path, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist")
+                    zip_filename = create_zip_file(folder_path, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist", define_artist == "No artist")
                     st.success(f"ZIP file generated successfully: {zip_filename}")
                     st.download_button(label="Download ZIP File", data=open(zip_filename, "rb").read(), file_name=zip_filename, mime="application/zip")
                 else:
-                    output_file = generate_csv(folder_path, selected_artists, selected_modifiers, custom_text, include_image_name, output_format, define_artist == "Let AI define artist")
+                    output_file = generate_csv(folder_path, selected_artists, selected_modifiers, custom_text, include_image_name, output_format, define_artist == "Let AI define artist", define_artist == "No artist")
                     st.success(f"File generated successfully: {output_file}")
                     st.download_button(label="Download File", data=open(output_file, "rb").read(), file_name=output_file, mime="text/csv" if output_format == "csv" else "text/plain")
 
