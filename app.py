@@ -296,13 +296,16 @@ def main_ui():
     .affiliate-logos img {width: 60px; height: auto;}
     .creator-info {display: flex; justify-content: center; gap: 10px; align-items: center;}
     .creator-info img {width: 30px; height: auto;}
-    .logo {display: block; margin: 0 auto 20px;}
     </style>
     """
     st.markdown(hide_default_format, unsafe_allow_html=True)
 
     st.title("Photo to AI Art Prompt")
-    st.image("https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/logo.png", width=200, class_='logo')
+    st.markdown(
+        "<div style='text-align: center;'>"
+        "<img src='https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/logo.png' width='200' style='margin: 0 auto 20px;'/>"
+        "</div>", unsafe_allow_html=True
+    )
     st.subheader("Turn your photos into stunning AI art prompts")
 
     mode = st.sidebar.radio("Choose Mode", ["Single Image", "Batch Processing"])
