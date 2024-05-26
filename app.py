@@ -299,13 +299,13 @@ def main_ui():
     </style>
     """
     st.markdown(hide_default_format, unsafe_allow_html=True)
-
-    st.title("Photo to AI Art Prompt")
     st.markdown(
         "<div style='text-align: center;'>"
         "<img src='https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/logo.png' width='200' style='margin: 0 auto 20px;'/>"
         "</div>", unsafe_allow_html=True
     )
+    st.title("Pic-To-Prompt: Photo to AI Art Prompt")
+
     st.subheader("Turn your photos into stunning AI art prompts")
 
     mode = st.sidebar.radio("Choose Mode", ["Single Image", "Batch Processing"])
