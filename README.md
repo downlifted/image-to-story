@@ -1,25 +1,24 @@
-# Photo-to-story
+PicToPrompt: Reverse Prompt Tool
 
-Photo to Story is an engaging project that utilizes the power of LLM Falcon 7B - Instruct via Hugging Face to craft captivating and concise narratives based on user-uploaded images. 
+Overview:
+PicToPrompt is the ultimate reverse prompt tool designed for artists and developers to transform images into detailed prompts using advanced language models. It simplifies the creative workflow by generating prompts from images in bulk.
 
-This innovative application seamlessly generates interesting short stories inspired by the visual input provided by the user.
+Key Features -
+Batch Processing: Efficiently process multiple images at once, saving you valuable time and effort. Upload your image set, and PicToPrompt will generate a comprehensive set of prompts.
+
+Detailed Outputs: Receive your results in easily accessible CSV or TXT files. Each file includes thorough descriptions, perfect for analysis or direct integration into your projects.
+
+Customizable Options: Tailor your prompts with a variety of modifiers and artist influences. Choose from different artistic styles, themes, and influences to ensure each prompt is uniquely crafted.
+
+Artist Influences: Incorporate styles from famous artists or movements to give your prompts a distinctive and recognizable flair. Options range from surrealism to modern cultural references.
+
+Modifier Flexibility: Add creativity to your prompts with options like surrealism, modern culture references, fantasy elements, and more. Adjust and combine modifiers to match your specific creative vision.
+
+Why Choose PicToPrompt?
+PicToPrompt isn't just a tool—it's your creative assistant. With its robust batch processing capabilities and extensive customization options, you can transform your images into vivid, descriptive prompts that inspire and elevate your projects.
 
 **Key Technologies Used:**
 
 LLM Falcon 7B - Instruct via Hugging Face
 
 Langchain for integrating LLM into action
-
-Deployed on Streamlit
-
-Try it out here: https://photo-to-story.streamlit.app/
-
-This project is a testament to the fusion of cutting-edge language models and user interaction, enabling the creation of fascinating narratives from images.
-
-**Connect with Me:**
-
-LinkedIn: https://www.linkedin.com/in/priyansh-bhardwaj-25964317a/
-
-Portfolio Website: https://priyansh-portfolio.streamlit.app/
-
-Feel free to explore the project, contribute, and share your feedback! Your support and input are greatly appreciated.
