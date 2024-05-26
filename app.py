@@ -164,7 +164,7 @@ def main_ui():
     <style>
     #MainMenu {visibility: hidden; }
     footer {visibility: hidden;}
-    .stApp {max-width: 1200px; margin: auto;}
+    .stApp {max-width: 1200px; margin: auto; background: url('https://images.unsplash.com/photo-1580072000227-b0e1d4c9b94e') no-repeat center center fixed; background-size: cover;}
     </style>
     """
     st.markdown(hide_default_format, unsafe_allow_html=True)
@@ -173,6 +173,13 @@ def main_ui():
     st.subheader("Turn your photos into stunning AI art prompts")
 
     mode = st.sidebar.radio("Choose Mode", ["Single Image", "Batch Processing"])
+    
+    with st.sidebar.expander("Creator Info"):
+        st.write("Created by BeWiZ")
+        st.write("[Twitter](https://x.com/AiAnarchist)")
+        st.write("Modified Version of Photo to Story by Priyansh Bhardwaj")
+        st.write("Special thanks to the original artist for inspiration.")
+        st.image('/workspaces/image-to-story/logotrans.png', use_column_width=True)
 
     if mode == "Single Image":
         single_image_ui()
