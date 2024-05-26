@@ -291,21 +291,28 @@ def main_ui():
         <style>
         #MainMenu {visibility: hidden; }
         footer {visibility: hidden;}
-        .stApp {background: url('https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/36996a59-a15b-47b0-827f-dc427a84bfc1.jpg?raw=true') no-repeat center center fixed; background-size: cover;}
+        .stApp {background: url('https://github.com/downlifted/pictoprompt/blob/master/images/pexels-photo-139312.jpg?raw=true') no-repeat center center fixed; background-size: cover;}
         .sidebar .sidebar-content {text-align: center; width: 350px;}
         .affiliate-logos {display: flex; justify-content: center; gap: 10px;}
         .affiliate-logos img {width: 60px; height: auto;}
         .creator-info {display: flex; justify-content: center; gap: 10px; align-items: center;}
         .creator-info img {width: 30px; height: auto;}
+        .top-bar {display: flex; justify-content: center; align-items: center; gap: 20px; padding: 10px; background-color: rgba(255, 255, 255, 0.8); border-radius: 8px; margin-bottom: 20px;}
+        .top-bar img {width: 100px; height: 150px;}
         </style>
         """,
         unsafe_allow_html=True
     )
 
     st.markdown(
-        "<div style='text-align: center;'>"
-        "<img src='https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/logo.png' width='300' style='margin: 0 auto 20px;'/>"
-        "</div>", unsafe_allow_html=True
+        "<div class='top-bar'>"
+        "<img src='https://github.com/downlifted/pictoprompt/blob/master/images/pexels-photo-139312.jpg?raw=true' alt='Logo'/>"
+        "<div>"
+        "<a href='https://x.com/AiAnarchist' target='_blank'><img src='https://static.vecteezy.com/system/resources/thumbnails/027/395/710/small/twitter-brand-new-logo-3-d-with-new-x-shaped-graphic-of-the-world-s-most-popular-social-media-free-png.png' alt='X'></a>"
+        "<a href='mailto:downlifted@gmail.com'><img src='https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_(2020).svg' alt='Email'></a>"
+        "</div>"
+        "</div>", 
+        unsafe_allow_html=True
     )
     st.title("Pic-To-Prompt: Photo to AI Art Prompt")
 
@@ -324,7 +331,7 @@ def main_ui():
         st.write("Modified Version of Photo to Story by Priyansh Bhardwaj")
         st.write("[Try Photo-To-Story](https://photo-to-story.streamlit.app/)")
         st.write("Special thanks to the original artist for inspiration.")
-        st.image('https://raw.githubusercontent.com/downlifted/image-to-story/master/aia.png', width='250', use_column_width=True)
+        st.image('https://raw.githubusercontent.com/downlifted/image-to-story/master/logotrans.png', width='250', use_column_width=True)
 
     st.sidebar.markdown("### Generate Art Online")
     st.sidebar.markdown("<div class='affiliate-logos'>"
