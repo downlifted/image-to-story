@@ -8,7 +8,7 @@ from io import BytesIO
 from zipfile import ZipFile
 
 # Directly setting the API key
-API_KEY = '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'
+
 headers = {"Authorization": f"Bearer {API_KEY}"}
 
 # List of artists and modifiers
@@ -93,13 +93,13 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
             if define_artist:
                 artist_count = random.choice([0, 1, 2])
                 if artist_count > 0:
-                    artist_list = ', '.join(random.sample(artists, artist_count))
+                    artist_list = ', '.join(random.sample(artists, min(artist_count, len(artists))))
                     prompt += f" Style by {artist_list}."
             else:
                 artist = ', '.join(random.sample(artists, 1))
                 prompt += f" Style by {artist}."
         if modifiers:
-            modifier = ', '.join(random.sample(modifiers, len(modifiers)))
+            modifier = ', '.join(random.sample(modifiers, min(10, len(modifiers))))
             prompt += f" Modifier: {modifier}."
 
         payload = {
