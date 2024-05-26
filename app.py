@@ -291,7 +291,7 @@ def main_ui():
         <style>
         #MainMenu {visibility: hidden; }
         footer {visibility: hidden;}
-        .stApp {background: url('https://github.com/downlifted/pictoprompt/blob/master/images/pexels-photo-139312.jpg?raw=true') no-repeat center center fixed; background-size: cover;}
+        .stApp {background: url('https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/file-ztBd8eHuRgovbz8eAwNeabmz.jpg?raw=true') no-repeat center center fixed; background-size: cover;}
         .sidebar .sidebar-content {text-align: center; width: 350px;}
         .affiliate-logos {display: flex; justify-content: center; gap: 10px;}
         .affiliate-logos img {width: 60px; height: auto;}
