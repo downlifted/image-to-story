@@ -117,7 +117,7 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
 
     try:
         generated_text = response[0]["generated_text"]
-        if "As the AI language model" in generated_text or "I am unable to render visual data" in generated_text:
+        if "As the AI language model" in generated_text or "I am unable to render visual data" in generated_text or "As an AI art model" in generated_text or "AI" in generated_text:
             # Retry if the response contains undesired phrases
             response = requests.post(API_URL, headers=headers, json=payload)
             response = response.json()
