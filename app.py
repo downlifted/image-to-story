@@ -286,19 +286,22 @@ def batch_image_ui():
         os.rmdir(folder_path)
 
 def main_ui():
-    hide_default_format = """
-    <style>
-    #MainMenu {visibility: hidden; }
-    footer {visibility: hidden;}
-    .stApp {max-width: 1200px; margin: auto; background: url('https://images.unsplash.com/photo-1580072000227-b0e1d4c9b94e') no-repeat center center fixed; background-size: cover;}
-    .sidebar .sidebar-content {text-align: center; width: 400px;}
-    .affiliate-logos {display: flex; justify-content: center; gap: 10px;}
-    .affiliate-logos img {width: 60px; height: auto;}
-    .creator-info {display: flex; justify-content: center; gap: 10px; align-items: center;}
-    .creator-info img {width: 30px; height: auto;}
-    </style>
-    """
-    st.markdown(hide_default_format, unsafe_allow_html=True)
+    st.markdown(
+        """
+        <style>
+        #MainMenu {visibility: hidden; }
+        footer {visibility: hidden;}
+        .stApp {background: url('https://github.com/downlifted/pictoprompt/blob/master/images/pexels-photo-139312.jpg?raw=true') no-repeat center center fixed; background-size: cover;}
+        .sidebar .sidebar-content {text-align: center; width: 350px;}
+        .affiliate-logos {display: flex; justify-content: center; gap: 10px;}
+        .affiliate-logos img {width: 60px; height: auto;}
+        .creator-info {display: flex; justify-content: center; gap: 10px; align-items: center;}
+        .creator-info img {width: 30px; height: auto;}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.markdown(
         "<div style='text-align: center;'>"
         "<img src='https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/logo.png' width='300' style='margin: 0 auto 20px;'/>"
@@ -319,8 +322,9 @@ def main_ui():
             "</div>", unsafe_allow_html=True
         )
         st.write("Modified Version of Photo to Story by Priyansh Bhardwaj")
+        st.write("[Try Photo-To-Story](https://photo-to-story.streamlit.app/)")
         st.write("Special thanks to the original artist for inspiration.")
-        st.image('https://raw.githubusercontent.com/downlifted/image-to-story/master/aia.png', width=250, use_column_width=True)
+        st.image('https://raw.githubusercontent.com/downlifted/image-to-story/master/aia.png', width='250', use_column_width=True)
 
     st.sidebar.markdown("### Generate Art Online")
     st.sidebar.markdown("<div class='affiliate-logos'>"
