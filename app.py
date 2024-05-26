@@ -277,7 +277,7 @@ def main_ui():
     #MainMenu {visibility: hidden; }
     footer {visibility: hidden;}
     .stApp {max-width: 1200px; margin: auto; background: url('https://images.unsplash.com/photo-1580072000227-b0e1d4c9b94e') no-repeat center center fixed; background-size: cover;}
-    .sidebar .sidebar-content {text-align: center; width: 300px;}
+    .sidebar .sidebar-content {text-align: center; width: 350px;}
     .affiliate-logos {display: flex; justify-content: center; gap: 10px;}
     .affiliate-logos img {width: 60px; height: auto;}
     .creator-info {display: flex; justify-content: center; gap: 10px; align-items: center;}
