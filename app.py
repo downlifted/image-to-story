@@ -135,7 +135,7 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
     return "Error: Failed to generate a valid prompt after multiple attempts."
 
 def generate_image(prompt):
-    stable_diffusion_api = "https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4"
+    stable_diffusion_api = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
     payload = {"inputs": prompt}
     response = requests.post(stable_diffusion_api, headers=headers, json=payload)
     
@@ -296,11 +296,13 @@ def main_ui():
     .affiliate-logos img {width: 60px; height: auto;}
     .creator-info {display: flex; justify-content: center; gap: 10px; align-items: center;}
     .creator-info img {width: 30px; height: auto;}
+    .logo {display: block; margin: 0 auto 20px;}
     </style>
     """
     st.markdown(hide_default_format, unsafe_allow_html=True)
 
     st.title("Photo to AI Art Prompt")
+    st.image("https://raw.githubusercontent.com/downlifted/pictoprompt/master/images/logo.png", width=200, class_='logo')
     st.subheader("Turn your photos into stunning AI art prompts")
 
     mode = st.sidebar.radio("Choose Mode", ["Single Image", "Batch Processing"])
