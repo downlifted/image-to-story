@@ -179,7 +179,7 @@ def main_ui():
         st.write("[Twitter](https://x.com/AiAnarchist)")
         st.write("Modified Version of Photo to Story by Priyansh Bhardwaj")
         st.write("Special thanks to the original artist for inspiration.")
-        st.image('/workspaces/image-to-story/logotrans.png', use_column_width=True)
+        st.image('https://raw.githubusercontent.com/downlifted/image-to-story/master/logotrans.png', use_column_width=True)
 
     if mode == "Single Image":
         single_image_ui()
