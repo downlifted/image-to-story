@@ -92,8 +92,10 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
         if define_artist:
             prompt += " Try to define the artist style."
         else:
-            artist = ', '.join(random.sample(artists, len(artists)))
-            prompt += f" Style by {artist}."
+            artist_count = random.choice([0, 1, 2])
+            if artist_count > 0:
+                artist_list = ', '.join(random.sample(artists, artist_count))
+                prompt += f" Style by {artist_list}."
     if modifiers:
         modifier = ', '.join(random.sample(modifiers, len(modifiers)))
         prompt += f" Modifier: {modifier}."
@@ -126,7 +128,7 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
     return "Error: Failed to generate a valid prompt after multiple attempts."
 
 def generate_image(prompt):
-    stable_diffusion_api = "https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4"
+    stable_diffusion_api = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
     payload = {"inputs": prompt}
     response = requests.post(stable_diffusion_api, headers=headers, json=payload)
     
@@ -340,7 +342,7 @@ def main_ui():
         - **Artist Selection**: Choose whether to let the AI define the artist, use your own artist selection, or no artist at all.
         - **Modifiers**: Select optional modifiers to refine the style and details of your prompts.
         - **Output**: Download the generated prompts as a CSV, TXT, or DOC file, or get them in a ZIP file if you choose to output prompts in separate documents.
-        - **Generate Image**: Check the box to generate AI art from the prompt using OpenAI DALL·E.
+        - **Generate Image**: Check the box to generate AI art from the prompt using Stable Diffusion 2.
         ''')
 
 if __name__ == "__main__":
