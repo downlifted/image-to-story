@@ -134,16 +134,20 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
 
     return "Error: Failed to generate a valid prompt after multiple attempts."
 
-def generate_image(prompt):
+def generate_image(prompt, retries=3):
     stable_diffusion_api = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
     payload = {"inputs": prompt}
-    response = requests.post(stable_diffusion_api, headers=headers, json=payload)
-    
-    if response.status_code == 200:
-        return response.content
-    else:
-        st.error("Error generating image. Status code: {}".format(response.status_code))
-        return None
+
+    for attempt in range(retries):
+        response = requests.post(stable_diffusion_api, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            return response.content
+        else:
+            st.warning(f"Attempt {attempt+1}: Error generating image. Status code: {response.status_code}")
+
+    st.error("Error generating image after multiple attempts. Please try again later.")
+    return None
 
 def save_file(data, filename, file_format):
     if file_format == "csv":
