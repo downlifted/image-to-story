@@ -6,8 +6,14 @@ import pandas as pd
 from PIL import Image
 from io import BytesIO
 from zipfile import ZipFile
+from dotenv import load_dotenv
 
-# Directly setting the API key
+# Load environment variables from .env file if exists
+load_dotenv()
+API_KEY = os.getenv('API_KEY')
+
+if API_KEY is None:
+    st.error("API_KEY environment variable not set. Please set it in the Streamlit Cloud settings.")
 
 headers = {"Authorization": f"Bearer {API_KEY}"}
 
