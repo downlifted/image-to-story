@@ -320,7 +320,7 @@ def main_ui():
         )
         st.write("Modified Version of Photo to Story by Priyansh Bhardwaj")
         st.write("Special thanks to the original artist for inspiration.")
-        st.image('https://raw.githubusercontent.com/downlifted/pictoprompt/master/aia.png', width='300', use_column_width=True)
+        st.image('https://raw.githubusercontent.com/downlifted/pictoprompt/master/aia.png', width='250', use_column_width=True)
 
     st.sidebar.markdown("### Generate Art Online")
     st.sidebar.markdown("<div class='affiliate-logos'>"
