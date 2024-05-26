@@ -210,7 +210,7 @@ def single_image_ui():
                         st.error("Error generating image. Please try again.")
 
                 # Provide link to generate image on Bing
-                bing_url = f"https://www.bing.com/images/create?q={prompt.replace(' ', '+')}"
+                bing_url = f"https://www.bing.com/images/create?q={'+'.join(prompt.split())}"
                 st.markdown(f"[Generate this image on Bing]({bing_url})", unsafe_allow_html=True)
                 
                 # Provide affiliate links
