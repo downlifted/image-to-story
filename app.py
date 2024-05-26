@@ -9,7 +9,7 @@ import streamlit as st
 # from dotenv import load_dotenv
 # load_dotenv()
 
-API_KEY = os.getenv('HF_API_KEY')
+API_KEY = os.getenv('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')
 
 headers = {"Authorization": f"Bearer {API_KEY}"}
 
