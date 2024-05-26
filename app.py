@@ -116,7 +116,10 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
     response = response.json()
 
     try:
-        return response[0]["generated_text"]
+        generated_text = response[0]["generated_text"]
+        if "As the AI language model" in generated_text:
+            return "Error: Failed to generate a valid prompt. Please try again."
+        return generated_text
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -336,3 +339,4 @@ def main_ui():
         ''')
 
 if __name__ == "__main__":
+    main_ui()
