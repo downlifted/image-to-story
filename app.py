@@ -3,7 +3,7 @@ import random
 import requests
 import streamlit as st
 import pandas as pd
-from PIL import Image, ImageEnhance
+from PIL import Image
 from io import BytesIO
 from zipfile import ZipFile
 
@@ -85,36 +85,37 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
     falcon_7b = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
     API_URL = falcon_7b
 
-    prompt = f"Create a unique and high-quality prompt for AI art based on the context of the photo: {inputText}."
-    if custom_text:
-        prompt += f" Theme: {custom_text}."
-    if not no_artist:
-        if define_artist:
-            prompt += " Try to define the artist style."
-        else:
-            artist_count = random.choice([0, 1, 2])
-            if artist_count > 0:
-                artist_list = ', '.join(random.sample(artists, artist_count))
-                prompt += f" Style by {artist_list}."
-    if modifiers:
-        modifier = ', '.join(random.sample(modifiers, len(modifiers)))
-        prompt += f" Modifier: {modifier}."
+    for attempt in range(retries):
+        prompt = f"Create a unique and high-quality prompt for AI art based on the context of the photo: {inputText}."
+        if custom_text:
+            prompt += f" Theme: {custom_text}."
+        if not no_artist:
+            if define_artist:
+                artist_count = random.choice([0, 1, 2])
+                if artist_count > 0:
+                    artist_list = ', '.join(random.sample(artists, artist_count))
+                    prompt += f" Style by {artist_list}."
+            else:
+                artist = ', '.join(random.sample(artists, 1))
+                prompt += f" Style by {artist}."
+        if modifiers:
+            modifier = ', '.join(random.sample(modifiers, len(modifiers)))
+            prompt += f" Modifier: {modifier}."
 
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 250,
-            "do_sample": True,
-            "top_k": 10,
-            "temperature": 1,
-            "return_full_text": False,
-        },
-        "options": {
-            "wait_for_model": True
+        payload = {
+            "inputs": prompt,
+            "parameters": {
+                "max_new_tokens": 250,
+                "do_sample": True,
+                "top_k": 10,
+                "temperature": 1,
+                "return_full_text": False,
+            },
+            "options": {
+                "wait_for_model": True
+            }
         }
-    }
 
-    for _ in range(retries):
         response = requests.post(API_URL, headers=headers, json=payload)
         response = response.json()
 
@@ -123,7 +124,7 @@ def generatePrompt(inputText, artists, modifiers, custom_text, define_artist, no
             if "As the AI language model" not in generated_text and "I am unable to render visual data" not in generated_text:
                 return generated_text
         except Exception as e:
-            return f"Error: {str(e)}"
+            continue
 
     return "Error: Failed to generate a valid prompt after multiple attempts."
 
