@@ -6,7 +6,6 @@ import pandas as pd
 from PIL import Image
 from io import BytesIO
 from zipfile import ZipFile
-from dotenv import load_dotenv
 
 # Load environment variables from .env file if exists
 load_dotenv()
