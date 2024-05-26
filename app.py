@@ -290,8 +290,6 @@ def batch_image_ui():
         os.rmdir(folder_path)
 
 def main_ui():
-    st.set_page_config(page_title="Photo to Prompt", page_icon="🎨", layout="wide")
-
     hide_default_format = """
     <style>
     #MainMenu {visibility: hidden; }
