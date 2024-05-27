@@ -169,7 +169,7 @@ def single_image_ui():
                 # Perform style transfer
                 structure_image_path = random.choice([f"structure_images/{image.name}" for image in structure_images])
                 with open(structure_image_path, "wb") as file:
-                    file.write(structure_images[0].getvalue())
+                    file.write(random.choice(structure_images).getvalue())
 
                 progress_bar = st.progress(0)
                 output = run_style_transfer(structure_image_path, style_image_path, prompt)
@@ -178,8 +178,10 @@ def single_image_ui():
                     st.image(output, caption="Generated AI Art", use_column_width=True)
                 else:
                     st.error("Error performing style transfer. Please try again.")
-            else:
-                st.error("Failed to fetch a valid structure image. Please try again.")
+    elif uploaded_file is None:
+        st.warning("Please upload a photo to generate AI art prompt and perform style transfer.")
+    elif structure_images is None:
+        st.warning("Please upload at least one structure image.")
 
 def batch_image_ui():
     st.header("Batch Process Images to Generate Prompts and Style Transfer")
@@ -209,7 +211,7 @@ def batch_image_ui():
 
                 structure_image_path = random.choice([f"structure_images/{image.name}" for image in structure_images])
                 with open(structure_image_path, "wb") as file:
-                    file.write(structure_images[0].getvalue())
+                    file.write(random.choice(structure_images).getvalue())
 
                 output = run_style_transfer(structure_image_path, style_image_path, prompt)
                 if output:
