@@ -1,3 +1,5 @@
+pip install replicate
+
 import os
 import random
 import requests
