@@ -1,4 +1,3 @@
-pip install replicate
 
 import os
 import random
