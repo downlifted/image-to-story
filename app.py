@@ -166,10 +166,17 @@ def single_image_ui():
                 st.write("**Caption:**", caption)
                 st.write("**Prompt:**", prompt)
 
+                # Save structure images
+                structure_image_paths = []
+                os.makedirs("structure_images", exist_ok=True)
+                for structure_image in structure_images:
+                    structure_image_path = f"structure_images/{structure_image.name}"
+                    with open(structure_image_path, "wb") as file:
+                        file.write(structure_image.getvalue())
+                    structure_image_paths.append(structure_image_path)
+
                 # Perform style transfer
-                structure_image_path = random.choice([f"structure_images/{image.name}" for image in structure_images])
-                with open(structure_image_path, "wb") as file:
-                    file.write(random.choice(structure_images).getvalue())
+                structure_image_path = random.choice(structure_image_paths)
 
                 progress_bar = st.progress(0)
                 output = run_style_transfer(structure_image_path, style_image_path, prompt)
@@ -199,6 +206,15 @@ def batch_image_ui():
             num_files = len(uploaded_files)
             results = []
 
+            # Save structure images
+            structure_image_paths = []
+            os.makedirs("structure_images", exist_ok=True)
+            for structure_image in structure_images:
+                structure_image_path = f"structure_images/{structure_image.name}"
+                with open(structure_image_path, "wb") as file:
+                    file.write(structure_image.getvalue())
+                structure_image_paths.append(structure_image_path)
+
             for idx, uploaded_file in enumerate(uploaded_files):
                 style_image_path = f"style_images/{uploaded_file.name}"
                 os.makedirs("style_images", exist_ok=True)
@@ -209,9 +225,7 @@ def batch_image_ui():
                 caption = image_to_text(style_image_path)
                 prompt = generate_prompt(caption, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist", define_artist == "No artist")
 
-                structure_image_path = random.choice([f"structure_images/{image.name}" for image in structure_images])
-                with open(structure_image_path, "wb") as file:
-                    file.write(random.choice(structure_images).getvalue())
+                structure_image_path = random.choice(structure_image_paths)
 
                 output = run_style_transfer(structure_image_path, style_image_path, prompt)
                 if output:
