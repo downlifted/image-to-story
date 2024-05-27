@@ -6,6 +6,13 @@ import replicate
 from PIL import Image
 from io import BytesIO
 
+# Ensure all required packages are installed
+try:
+    import replicate
+except ImportError:
+    os.system('pip install replicate')
+    import replicate
+
 # Set API keys
 API_KEY = os.getenv('API_KEY')
 REPLICATE_API_TOKEN = os.getenv('REPLICATE_API_TOKEN')
