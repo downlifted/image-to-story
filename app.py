@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 import replicate
 from PIL import Image
-from io import BytesIOf
+from io import BytesIO
 
 # Set API keys
 API_KEY = os.getenv('API_KEY')
@@ -13,7 +13,7 @@ if not API_KEY or not REPLICATE_API_TOKEN:
     st.error("API_KEY or REPLICATE_API_TOKEN environment variable not set. Please set them in the Streamlit Cloud settings.")
 
 # Set page configuration
-st.set_page_config(page_title="Photo to Prompt", page_icon="🎨", layout="wide")
+st.set_page_config(page_title="Photo to Style Transfer", page_icon="🎨", layout="wide")
 
 headers = {"Authorization": f"Bearer {API_KEY}"}
 replicate_client = replicate.Client(api_token=REPLICATE_API_TOKEN)
@@ -108,9 +108,7 @@ def generate_prompt(input_text, artists, modifiers, custom_text, define_artist, 
 
     return "Error: Failed to generate a valid prompt after multiple attempts."
 
-def run_style_transfer(structure_image_path, style_image_path, prompt, denoise_strength=0.64):
-    with open(structure_image_path, "rb") as f:
-        structure_image = f.read()
+def run_style_transfer(structure_image_url, style_image_path, prompt, denoise_strength=0.64):
     with open(style_image_path, "rb") as f:
         style_image = f.read()
 
@@ -118,7 +116,7 @@ def run_style_transfer(structure_image_path, style_image_path, prompt, denoise_s
         "fofr/style-transfer:f1023890703bc0a5a3a2c21b5e498833be5f6ef6e70e9daf6b9b3a4fd8309cf0",
         input={
             "style_image": style_image,
-            "structure_image": structure_image,
+            "structure_image": structure_image_url,
             "model": "high-quality",
             "width": 1024,
             "height": 1024,
@@ -135,7 +133,7 @@ def run_style_transfer(structure_image_path, style_image_path, prompt, denoise_s
 
 def single_image_ui():
     st.header("Single Image to Prompt and Style Transfer")
-    uploaded_file = st.file_uploader("Choose a photo...", type=["jpg", "png"], help="Upload a photo to generate AI art prompt")
+    uploaded_file = st.file_uploader("Choose a photo...", type=["jpg", "png"], help="Upload a photo to generate AI art prompt and perform style transfer")
 
     custom_text = st.text_input("Add Custom Text (Optional)")
     define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist", "No artist"])
@@ -150,7 +148,7 @@ def single_image_ui():
             file.write(uploaded_file.getvalue())
         st.image(uploaded_file, caption="Photo successfully uploaded", use_column_width=True)
 
-        if st.button("Generate Prompt and Style Transfer", key="single_generate"):
+        if st.button("Generate Prompt and Perform Style Transfer", key="single_generate"):
             with st.spinner('Generating Prompt and Performing Style Transfer...'):
                 caption = image_to_text(style_image_path)
                 prompt = generate_prompt(caption, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist", define_artist == "No artist")
@@ -166,6 +164,8 @@ def single_image_ui():
                         st.image(output, caption="Generated AI Art", use_column_width=True)
                     else:
                         st.error("Error performing style transfer. Please try again.")
+                else:
+                    st.error("Failed to fetch a valid structure image. Please try again.")
 
 def get_valid_image_url(base_url, start, end, extension="jpg"):
     for _ in range(10):
