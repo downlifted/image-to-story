@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 import replicate
 from PIL import Image
-from io import BytesIO
+from io import BytesIOf
 
 # Set API keys
 API_KEY = os.getenv('API_KEY')
