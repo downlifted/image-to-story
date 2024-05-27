@@ -1,60 +1,38 @@
 import os
+import json
 import random
 import requests
 import streamlit as st
 from PIL import Image
 from io import BytesIO
+import zipfile
+import socket
+import subprocess
+import time
 
-# Ensure all required packages are installed
-try:
-    import replicate
-except ImportError as e:
-    st.error("The 'replicate' module is not installed. Please install it using 'pip install replicate' in your terminal.")
-    raise e
+# HuggingFace API token
+API_KEY = "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"
+if not API_KEY:
+    st.error("API_KEY environment variable not set. Please set it in the Streamlit Cloud settings.")
+headers = {"Authorization": f"Bearer {API_KEY}"}
 
-# Set API keys
-API_KEY = os.getenv('API_KEY')
-REPLICATE_API_TOKEN = os.getenv('REPLICATE_API_TOKEN')
-if not API_KEY or not REPLICATE_API_TOKEN:
-    st.error("API_KEY or REPLICATE_API_TOKEN environment variable not set. Please set them in the Streamlit Cloud settings.")
-
-# Set page configuration
+# Ensure set_page_config is called first
 st.set_page_config(page_title="Photo to Style Transfer", page_icon="🎨", layout="wide")
 
-headers = {"Authorization": f"Bearer {API_KEY}"}
-replicate_client = replicate.Client(api_token=REPLICATE_API_TOKEN)
+# List of artists and modifiers (trimmed for brevity)
+artists = ["Takashi Murakami", "Tyler Edlin"]
+modifiers = ['4K', 'unreal engine']
 
-# List of artists and modifiers
-artists = [
-    "Takashi Murakami", "Beeple", "Tyler Edlin", "Andrew Robinson", "Anton Fadeev", 
-    "Chris Labrooy", "Dan Mumford", "Michelangelo", "Noah Bradley", "Cassius Marcellus Coolidge",
-    "Ted Nasmith", "James Gurney", "James Paick", "Justin Gerard", "Jakub Różalski", 
-    "Jeff Easley", "Agnes Lawrence Pelton", "Alan Lee", "Bob Byerley", "Bob Eggleton"
-]
+def start_comfyui_server():
+    """Start the ComfyUI server process."""
+    server_script = "run_comfyui.py"
+    return subprocess.Popen(["python", server_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-modifiers = [
-    '4K', 'unreal engine', 'octane render', '8k octane render', 'photorealistic', 'mandelbulb fractal', 
-    'Highly detailed carvings', 'Atmosphere', 'Dramatic lighting', 'Sakura blossoms', 'magical atmosphere', 
-    'muted colors', 'Highly detailed', 'Epic composition', 'incomparable reality', 'ultra detailed', 
-    'unreal 5', 'concept art', 'smooth', 'sharp focus', 'illustration', 'evocative', 'mysterious', 
-    'epic scene', 'intricate details', 'Pop Surrealism', 'sharp photography', 'hyper realistic', 
-    'maximum detail', 'ray tracing', 'volumetric lighting', 'cinematic', 'realistic lighting', 
-    'high resolution render', 'hyper realism', 'insanely detailed', 'volumetric light', 'light rays', 
-    'shock art', 'dystopian art', 'cgsociety', 'fantasy art', 'matte drawing', 'speed painting', 
-    'darksynth', 'redshift', 'color field', 'rendered in cinema4d', 'imax', '#vfxfriday', 'oil on canvas', 
-    'figurative art', 'detailed painting', 'soft mist', 'daz3d', 'zbrush', 'anime', 'behance hd', 
-    'panfuturism', 'futuristic', 'pixiv', 'auto-destructive art', 'apocalypse art', 'afrofuturism', 
-    'reimagined by industrial light and magic', 'metaphysical painting', 'wiccan', 'grotesque', 'whimsical', 
-    'psychedelic art', 'digital art', 'fractalism', 'anime aesthetic', 'chiaroscuro', 'mystical', 'majestic', 
-    'digital painting', 'psychedelic', 'synthwave', 'cosmic horror', 'lovecraftian', 'vanitas', 'macabre', 
-    'toonami', 'hologram', 'magic realism', 'impressionism', 'neo-fauvism', 'fauvism', 'synchromism'
-]
-
-def image_to_text(image_source):
+def image_to_text(image_path):
     salesforce_blip = "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base"
     API_URL = salesforce_blip
 
-    with open(image_source, "rb") as f:
+    with open(image_path, "rb") as f:
         data = f.read()
 
     response = requests.post(API_URL, headers=headers, data=data)
@@ -110,166 +88,99 @@ def generate_prompt(input_text, artists, modifiers, custom_text, define_artist, 
         if "As the AI language model" not in generated_text and "I am unable to render visual data" not in generated_text:
             return generated_text
     except Exception as e:
-        pass
+        return f"Error: {str(e)}"
 
     return "Error: Failed to generate a valid prompt after multiple attempts."
 
-def run_style_transfer(structure_image_path, style_image_path, prompt, denoise_strength=0.64):
-    with open(structure_image_path, "rb") as f:
-        structure_image = f.read()
-    with open(style_image_path, "rb") as f:
-        style_image = f.read()
+def zip_images(image_paths):
+    zip_filename = "transformed_images.zip"
+    with zipfile.ZipFile(zip_filename, 'w') as zipf:
+        for image_path in image_paths:
+            zipf.write(image_path, os.path.basename(image_path))
+    return zip_filename
 
-    output = replicate_client.run(
-        "fofr/style-transfer:f1023890703bc0a5a3a2c21b5e498833be5f6ef6e70e9daf6b9b3a4fd8309cf0",
-        input={
-            "style_image": style_image,
-            "structure_image": structure_image,
-            "model": "high-quality",
-            "width": 1024,
-            "height": 1024,
-            "prompt": prompt,
-            "output_format": "png",
-            "output_quality": 100,
-            "negative_prompt": "bird, feathers, female, woman, dress, face, eyes, animal, man, human, hands, eyes, face, mouth, nose, human, man, woman, animal, hair, cloth, sheets",
-            "number_of_images": 1,
-            "structure_depth_strength": 1.2,
-            "structure_denoising_strength": denoise_strength
-        }
-    )
-    return output
-
-def single_image_ui():
-    st.header("Single Image to Prompt and Style Transfer")
-    uploaded_file = st.file_uploader("Choose a photo...", type=["jpg", "png"], help="Upload a photo to generate AI art prompt and perform style transfer")
-
-    structure_images = st.file_uploader("Upload Structure Images", type=["jpg", "png"], accept_multiple_files=True, help="Upload one or more structure images")
+def main_ui():
+    st.title("ComfyUI Workflow Automation")
     
-    custom_text = st.text_input("Add Custom Text (Optional)")
+    # Start the ComfyUI server
+    comfyui_server_process = start_comfyui_server()
+    time.sleep(5)  # Wait for the server to start
+    
+    # User inputs for style and structure images
+    st.header("Upload Images")
+    uploaded_style_image = st.file_uploader("Choose a style image...", type=["jpg", "png"], key="style")
+    uploaded_structure_images = st.file_uploader("Choose structure images...", type=["jpg", "png"], accept_multiple_files=True, key="structure")
+    
+    # User input for custom prompt
+    custom_prompt = st.text_input("Add Custom Text (Optional)")
     define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist", "No artist"])
     selected_artists = st.multiselect("Select Artists (Optional)", artists) if define_artist == "Use my own artist" else []
     selected_modifiers = st.multiselect("Select Modifiers (Optional)", modifiers)
 
-    if uploaded_file is not None and structure_images:
-        style_image_path = f"style_images/{uploaded_file.name}"
-        os.makedirs("style_images", exist_ok=True)
+    if st.button("Start ComfyUI and Update Workflow"):
+        if uploaded_style_image and uploaded_structure_images:
+            # Save uploaded style image
+            style_image_path = os.path.join("images", uploaded_style_image.name)
+            os.makedirs("images", exist_ok=True)
+            with open(style_image_path, "wb") as f:
+                f.write(uploaded_style_image.getvalue())
 
-        with open(style_image_path, "wb") as file:
-            file.write(uploaded_file.getvalue())
-        st.image(uploaded_file, caption="Photo successfully uploaded", use_column_width=True)
-
-        if st.button("Generate Prompt and Perform Style Transfer", key="single_generate"):
-            with st.spinner('Generating Prompt and Performing Style Transfer...'):
-                caption = image_to_text(style_image_path)
-                prompt = generate_prompt(caption, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist", define_artist == "No artist")
-
-                st.write("**Caption:**", caption)
-                st.write("**Prompt:**", prompt)
-
-                # Save structure images
-                structure_image_paths = []
-                os.makedirs("structure_images", exist_ok=True)
-                for structure_image in structure_images:
-                    structure_image_path = f"structure_images/{structure_image.name}"
-                    with open(structure_image_path, "wb") as file:
-                        file.write(structure_image.getvalue())
-                    structure_image_paths.append(structure_image_path)
-
-                # Perform style transfer
-                structure_image_path = random.choice(structure_image_paths)
-
-                progress_bar = st.progress(0)
-                output = run_style_transfer(structure_image_path, style_image_path, prompt)
-                progress_bar.progress(100)
-                if output:
-                    st.image(output, caption="Generated AI Art", use_column_width=True)
-                else:
-                    st.error("Error performing style transfer. Please try again.")
-    elif uploaded_file is None:
-        st.warning("Please upload a photo to generate AI art prompt and perform style transfer.")
-    elif structure_images is None:
-        st.warning("Please upload at least one structure image.")
-
-def batch_image_ui():
-    st.header("Batch Process Images to Generate Prompts and Style Transfer")
-    uploaded_files = st.file_uploader("Upload Images", type=["jpg", "png"], accept_multiple_files=True, help="Upload multiple images for batch processing")
-    structure_images = st.file_uploader("Upload Structure Images", type=["jpg", "png"], accept_multiple_files=True, help="Upload one or more structure images")
-
-    custom_text = st.text_input("Add Custom Text (Optional)")
-    define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist", "No artist"], key="batch_define_artist")
-    selected_artists = st.multiselect("Select Artists (Optional)", artists, key="batch_artist") if define_artist == "Use my own artist" else []
-    selected_modifiers = st.multiselect("Select Modifiers (Optional)", modifiers, key="batch_modifier")
-
-    if uploaded_files and structure_images:
-        if st.button("Generate Prompts and Perform Style Transfer", key="batch_generate"):
-            progress_bar = st.progress(0)
-            num_files = len(uploaded_files)
-            results = []
-
-            # Save structure images
+            # Save uploaded structure images
             structure_image_paths = []
-            os.makedirs("structure_images", exist_ok=True)
-            for structure_image in structure_images:
-                structure_image_path = f"structure_images/{structure_image.name}"
-                with open(structure_image_path, "wb") as file:
-                    file.write(structure_image.getvalue())
-                structure_image_paths.append(structure_image_path)
+            for image in uploaded_structure_images:
+                image_path = os.path.join("images", image.name)
+                with open(image_path, "wb") as f:
+                    f.write(image.getvalue())
+                structure_image_paths.append(image_path)
+            
+            # Generate caption from the style image
+            caption = image_to_text(style_image_path)
+            st.write(f"**Generated Caption:** {caption}")
+            
+            # Generate prompt
+            prompt = generate_prompt(caption, selected_artists, selected_modifiers, custom_prompt, define_artist == "Let AI define artist", define_artist == "No artist")
+            st.write(f"**Generated Prompt:** {prompt}")
 
-            for idx, uploaded_file in enumerate(uploaded_files):
-                style_image_path = f"style_images/{uploaded_file.name}"
-                os.makedirs("style_images", exist_ok=True)
+            # Prepare data to send to run_comfyui.py
+            data = {
+                'style_image_path': style_image_path,
+                'structure_image_paths': structure_image_paths,
+                'prompt': prompt
+            }
 
-                with open(style_image_path, "wb") as file:
-                    file.write(uploaded_file.getvalue())
+            # Send data to run_comfyui.py
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.connect(('localhost', 65432))
+                    s.sendall(json.dumps(data).encode('utf-8'))
+                    response = s.recv(4096)
+                    print(f"Received response: {response}")
+            except ConnectionRefusedError:
+                st.error("Failed to connect to ComfyUI server. Make sure it is running.")
+                return
 
-                caption = image_to_text(style_image_path)
-                prompt = generate_prompt(caption, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist", define_artist == "No artist")
+            result = json.loads(response.decode('utf-8'))
 
-                structure_image_path = random.choice(structure_image_paths)
+            if isinstance(result, str):
+                st.error(result)
+                return
 
-                output = run_style_transfer(structure_image_path, style_image_path, prompt)
-                if output:
-                    results.append((uploaded_file.name, output))
-                progress_bar.progress((idx + 1) / num_files)
+            output_images = result
 
-            if results:
-                st.success("Batch processing complete. Here are the results:")
-                for name, image in results:
-                    st.image(image, caption=f"Generated AI Art for {name}", use_column_width=True)
-            else:
-                st.error("Batch processing failed. Please try again.")
+            # Display output images
+            for output_image_path in output_images:
+                st.image(output_image_path, caption=f"Transformed Image: {os.path.basename(output_image_path)}", use_column_width=True)
 
-def main_ui():
-    st.title("Pic-To-Prompt: Photo to AI Art Prompt and Style Transfer")
+            if len(output_images) > 1:
+                zip_filename = zip_images(output_images)
+                st.success("Batch processing completed. Download the transformed images:")
+                st.download_button(label="Download ZIP", data=open(zip_filename, "rb").read(), file_name=zip_filename, mime="application/zip")
+        else:
+            st.error("Please upload a style image and structure images.")
 
-    st.subheader("Turn your photos into stunning AI art prompts and perform style transfer")
-
-    mode = st.sidebar.radio("Choose Mode", ["Single Image", "Batch Processing"])
-    
-    if mode == "Single Image":
-        single_image_ui()
-    else:
-        batch_image_ui()
-
-    st.markdown("---")
-    st.markdown("### Additional Information")
-    
-    with st.expander("**Tech stack**"):
-        st.write('''
-        - **LLM : Falcon-7B-Instruct**
-        - **HuggingFace**
-        - **Replicate**
-        ''')
-
-    with st.expander("**App Working**"):
-        st.write('''
-        - **Upload Your Image(s)**: Upload a single image or multiple images to generate AI art prompts and perform style transfer.
-        - **Structure Images**: Upload one or more structure images that will be used for the style transfer.
-        - **Custom Text**: Add optional custom text to include in your prompts.
-        - **Artist Selection**: Choose whether to let the AI define the artist, use your own artist selection, or no artist at all.
-        - **Modifiers**: Select optional modifiers to refine the style and details of your prompts.
-        - **Style Transfer**: The uploaded images are used as the style images for the style transfer using Replicate API.
-        ''')
+    # Ensure the ComfyUI server is terminated when done
+    if comfyui_server_process:
+        comfyui_server_process.terminate()
 
 if __name__ == "__main__":
     main_ui()
