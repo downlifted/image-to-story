@@ -9,9 +9,10 @@ from io import BytesIO
 # Ensure all required packages are installed
 try:
     import replicate
-except ImportError:
-    os.system('pip install replicate')
-    import replicate
+except ImportError as e:
+    st.error("The 'replicate' module is not installed. Please install it using 'pip install replicate' in your terminal.")
+    raise e
+
 
 # Set API keys
 API_KEY = os.getenv('API_KEY')
