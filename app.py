@@ -50,8 +50,6 @@ modifiers = [
     'toonami', 'hologram', 'magic realism', 'impressionism', 'neo-fauvism', 'fauvism', 'synchromism'
 ]
 
-base_image_url = "https://raw.githubusercontent.com/downlifted/aiart/main/stripe/"
-
 def image_to_text(image_source):
     salesforce_blip = "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base"
     API_URL = salesforce_blip
@@ -116,7 +114,9 @@ def generate_prompt(input_text, artists, modifiers, custom_text, define_artist, 
 
     return "Error: Failed to generate a valid prompt after multiple attempts."
 
-def run_style_transfer(structure_image_url, style_image_path, prompt, denoise_strength=0.64):
+def run_style_transfer(structure_image_path, style_image_path, prompt, denoise_strength=0.64):
+    with open(structure_image_path, "rb") as f:
+        structure_image = f.read()
     with open(style_image_path, "rb") as f:
         style_image = f.read()
 
@@ -124,7 +124,7 @@ def run_style_transfer(structure_image_url, style_image_path, prompt, denoise_st
         "fofr/style-transfer:f1023890703bc0a5a3a2c21b5e498833be5f6ef6e70e9daf6b9b3a4fd8309cf0",
         input={
             "style_image": style_image,
-            "structure_image": structure_image_url,
+            "structure_image": structure_image,
             "model": "high-quality",
             "width": 1024,
             "height": 1024,
@@ -139,31 +139,18 @@ def run_style_transfer(structure_image_url, style_image_path, prompt, denoise_st
     )
     return output
 
-def get_valid_image_url(base_url, start, end, extension="jpg"):
-    for _ in range(10):
-        image_number = random.randint(start, end)
-        image_url = f"{base_url}{image_number}.{extension}"
-        if validate_url(image_url):
-            return image_url
-    return None
-
-def validate_url(url):
-    try:
-        response = requests.head(url, timeout=10)
-        return response.status_code == 200
-    except requests.RequestException:
-        return False
-
 def single_image_ui():
     st.header("Single Image to Prompt and Style Transfer")
     uploaded_file = st.file_uploader("Choose a photo...", type=["jpg", "png"], help="Upload a photo to generate AI art prompt and perform style transfer")
 
+    structure_images = st.file_uploader("Upload Structure Images", type=["jpg", "png"], accept_multiple_files=True, help="Upload one or more structure images")
+    
     custom_text = st.text_input("Add Custom Text (Optional)")
     define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist", "No artist"])
     selected_artists = st.multiselect("Select Artists (Optional)", artists) if define_artist == "Use my own artist" else []
     selected_modifiers = st.multiselect("Select Modifiers (Optional)", modifiers)
 
-    if uploaded_file is not None:
+    if uploaded_file is not None and structure_images:
         style_image_path = f"style_images/{uploaded_file.name}"
         os.makedirs("style_images", exist_ok=True)
 
@@ -180,17 +167,61 @@ def single_image_ui():
                 st.write("**Prompt:**", prompt)
 
                 # Perform style transfer
-                structure_image_url = get_valid_image_url(base_image_url, 1, 40)
-                if structure_image_url:
-                    progress_bar = st.progress(0)
-                    output = run_style_transfer(structure_image_url, style_image_path, prompt)
-                    progress_bar.progress(100)
-                    if output:
-                        st.image(output, caption="Generated AI Art", use_column_width=True)
-                    else:
-                        st.error("Error performing style transfer. Please try again.")
+                structure_image_path = random.choice([f"structure_images/{image.name}" for image in structure_images])
+                with open(structure_image_path, "wb") as file:
+                    file.write(structure_images[0].getvalue())
+
+                progress_bar = st.progress(0)
+                output = run_style_transfer(structure_image_path, style_image_path, prompt)
+                progress_bar.progress(100)
+                if output:
+                    st.image(output, caption="Generated AI Art", use_column_width=True)
                 else:
-                    st.error("Failed to fetch a valid structure image. Please try again.")
+                    st.error("Error performing style transfer. Please try again.")
+            else:
+                st.error("Failed to fetch a valid structure image. Please try again.")
+
+def batch_image_ui():
+    st.header("Batch Process Images to Generate Prompts and Style Transfer")
+    uploaded_files = st.file_uploader("Upload Images", type=["jpg", "png"], accept_multiple_files=True, help="Upload multiple images for batch processing")
+    structure_images = st.file_uploader("Upload Structure Images", type=["jpg", "png"], accept_multiple_files=True, help="Upload one or more structure images")
+
+    custom_text = st.text_input("Add Custom Text (Optional)")
+    define_artist = st.radio("Artist Selection", ["Let AI define artist", "Use my own artist", "No artist"], key="batch_define_artist")
+    selected_artists = st.multiselect("Select Artists (Optional)", artists, key="batch_artist") if define_artist == "Use my own artist" else []
+    selected_modifiers = st.multiselect("Select Modifiers (Optional)", modifiers, key="batch_modifier")
+
+    if uploaded_files and structure_images:
+        if st.button("Generate Prompts and Perform Style Transfer", key="batch_generate"):
+            progress_bar = st.progress(0)
+            num_files = len(uploaded_files)
+            results = []
+
+            for idx, uploaded_file in enumerate(uploaded_files):
+                style_image_path = f"style_images/{uploaded_file.name}"
+                os.makedirs("style_images", exist_ok=True)
+
+                with open(style_image_path, "wb") as file:
+                    file.write(uploaded_file.getvalue())
+
+                caption = image_to_text(style_image_path)
+                prompt = generate_prompt(caption, selected_artists, selected_modifiers, custom_text, define_artist == "Let AI define artist", define_artist == "No artist")
+
+                structure_image_path = random.choice([f"structure_images/{image.name}" for image in structure_images])
+                with open(structure_image_path, "wb") as file:
+                    file.write(structure_images[0].getvalue())
+
+                output = run_style_transfer(structure_image_path, style_image_path, prompt)
+                if output:
+                    results.append((uploaded_file.name, output))
+                progress_bar.progress((idx + 1) / num_files)
+
+            if results:
+                st.success("Batch processing complete. Here are the results:")
+                for name, image in results:
+                    st.image(image, caption=f"Generated AI Art for {name}", use_column_width=True)
+            else:
+                st.error("Batch processing failed. Please try again.")
 
 def main_ui():
     st.title("Pic-To-Prompt: Photo to AI Art Prompt and Style Transfer")
@@ -202,7 +233,7 @@ def main_ui():
     if mode == "Single Image":
         single_image_ui()
     else:
-        st.error("Batch Processing not implemented yet")
+        batch_image_ui()
 
     st.markdown("---")
     st.markdown("### Additional Information")
@@ -216,11 +247,12 @@ def main_ui():
 
     with st.expander("**App Working**"):
         st.write('''
-        - **Upload Your Image(s)**: Upload a single image to generate AI art prompts and perform style transfer.
+        - **Upload Your Image(s)**: Upload a single image or multiple images to generate AI art prompts and perform style transfer.
+        - **Structure Images**: Upload one or more structure images that will be used for the style transfer.
         - **Custom Text**: Add optional custom text to include in your prompts.
         - **Artist Selection**: Choose whether to let the AI define the artist, use your own artist selection, or no artist at all.
         - **Modifiers**: Select optional modifiers to refine the style and details of your prompts.
-        - **Style Transfer**: The uploaded image is used as the style image for the style transfer using Replicate API.
+        - **Style Transfer**: The uploaded images are used as the style images for the style transfer using Replicate API.
         ''')
 
 if __name__ == "__main__":
